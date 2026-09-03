@@ -1,5 +1,11 @@
+import Post from "./Post";
+
 const Desktop = () => {
-  return <div>Desktop</div>;
+  return (
+    <div>
+      <Post />
+    </div>
+  );
 };
 
 export default Desktop;

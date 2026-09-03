@@ -5,15 +5,18 @@ interface DrawerProps {
   children?: ReactNode;
   open?: boolean;
   onClose?: () => void;
+  key?: string | number;
 }
 const Drawer: FC<DrawerProps> = ({
   title = "DrawerTitle",
   children,
   open = true,
   onClose,
+  key = 0,
 }) => {
   return (
     <div
+      key={key}
       style={{
         right: open ? 0 : "-50%",
         transition: ".3s",

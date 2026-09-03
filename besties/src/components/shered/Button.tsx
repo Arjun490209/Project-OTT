@@ -6,6 +6,7 @@ interface ButtonInterFace {
   type?: keyof typeof theme;
   icon?: string;
   onClick?: () => void;
+  key?: string | number;
 }
 
 const theme = {
@@ -48,10 +49,12 @@ const Button: FC<ButtonInterFace> = ({
   type = "primary",
   icon,
   onClick,
+  key = 0,
 }) => {
   return (
     <button
-      className={`${theme[type]} flex gap-2 items-center`}
+      key={key}
+      className={`${theme[type]} flex gap-2 items-center w-full justify-center`}
       onClick={onClick}
     >
       {icon && <i className={`ri-${icon}`}></i>}{" "}

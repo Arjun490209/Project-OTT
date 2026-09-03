@@ -5,15 +5,18 @@ interface inputInterface {
   name: string;
   type?: string;
   required?: boolean;
+  key?: string | number;
 }
 const Input: FC<inputInterface> = ({
   placeholder,
   name,
   type = "text",
   required = false,
+  key = 0,
 }) => {
   return (
     <input
+      key={key}
       type={type}
       name={name}
       placeholder={placeholder}

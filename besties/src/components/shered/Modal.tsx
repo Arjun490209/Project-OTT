@@ -7,13 +7,15 @@ interface ModalProps {
   children?: ReactNode;
   open?: boolean;
   close?: () => void;
+  key?: string | number;
 }
 
-const Modal: FC<ModalProps> = ({ open, close, title, children }) => {
+const Modal: FC<ModalProps> = ({ open, close, title, children, key = 0 }) => {
   return (
     <>
       {open && (
         <div
+          key={key}
           className="h-screen w-full fixed top-0 left-0 bg-black bg-opa flex justify-center items-center animate__animated animate__fadeIn"
           style={{
             background: "rgba(0,0,0,0.9)",
