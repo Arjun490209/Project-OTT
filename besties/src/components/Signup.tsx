@@ -3,9 +3,23 @@ import Button from "./shered/Button";
 import Card from "./shered/Card";
 import Input from "./shered/Input";
 import { Link } from "react-router-dom";
+import Form, { type FormDataType } from "./shered/Form";
+import HttpInterceptor from "../lib/HttpInterceptor";
+import { toast } from "react-toastify";
+
+import CatchError from "../lib/CatchError";
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
+
+  const signup = async (value: FormDataType) => {
+    try {
+      const { data } = await HttpInterceptor.post("/auth/signup", value);
+      toast.success(data.message);
+    } catch (error: unknown) {
+      CatchError(error);
+    }
+  };
   return (
     <div className="w-full h-screen bg-gray-300 flex justify-center items-center">
       <div className="w-8/12 max-w-4xl">
@@ -13,7 +27,7 @@ const Signup = () => {
           <div className="grid grid-cols-1 md:grid-cols-2">
             {/* Form Section */}
             <div>
-              <form action="" className="p-8 space-y-4 w-full">
+              <Form className="p-8 space-y-4 w-full" onValue={signup}>
                 <div className="mb-2">
                   <h2 className="text-2xl font-bold text-gray-800">
                     Create Account
@@ -86,11 +100,11 @@ const Signup = () => {
                     Login
                   </Link>
                 </div>
-              </form>
+              </Form>
             </div>
 
             {/* Illustration / Graphic Section */}
-            <div className="hidden md:flex h-125 bg-linear-to-t from-sky-500 to-indigo-500 rounded-r-xl justify-center items-center p-6">
+            <div className="hidden md:flex h-full bg-linear-to-t from-sky-500 to-indigo-500 rounded-r-xl justify-center items-center p-6">
               <img
                 src="/images/auth.svg"
                 alt="Auth Illustration"

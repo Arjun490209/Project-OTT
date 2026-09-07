@@ -3,9 +3,22 @@ import Button from "./shered/Button";
 import Card from "./shered/Card";
 import Input from "./shered/Input";
 import { Link } from "react-router-dom";
+import Form, { type FormDataType } from "./shered/Form";
+import HttpInterceptor from "../lib/HttpInterceptor";
+import { toast } from "react-toastify";
+import CatchError from "../lib/CatchError";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+
+  const login = async (value: FormDataType) => {
+    try {
+      const { data } = await HttpInterceptor.post("/auth/login", value);
+      toast.success(data.message);
+    } catch (error: unknown) {
+      CatchError(error);
+    }
+  };
 
   return (
     <div className="w-full h-screen bg-gray-300 flex justify-center items-center">
@@ -14,7 +27,7 @@ const Login = () => {
           <div className="grid grid-cols-1 md:grid-cols-2">
             {/* Form Section */}
             <div>
-              <form action="" className="p-8 space-y-4 w-full">
+              <Form className="p-8 space-y-4 w-full" onValue={login}>
                 <div className="mb-2">
                   <h2 className="text-2xl font-bold text-gray-800">
                     Welcome Back
@@ -69,7 +82,7 @@ const Login = () => {
                     Sign up
                   </Link>
                 </div>
-              </form>
+              </Form>
             </div>
 
             {/* Illustration / Graphic Section */}

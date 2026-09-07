@@ -11,6 +11,7 @@ import Video from "./components/app/Video";
 import Audio from "./components/app/Audio";
 import Chat from "./components/app/Chat";
 import NotFound from "./components/NotFound";
+import { ToastContainer } from "react-toastify";
 
 const App = () => {
   return (
@@ -32,6 +33,7 @@ const App = () => {
 
         <Route path="*" element={<NotFound />} />
       </Routes>
+      <ToastContainer />
     </BrowserRouter>
   );
 };
