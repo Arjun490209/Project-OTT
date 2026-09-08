@@ -12,29 +12,37 @@ import Audio from "./components/app/Audio";
 import Chat from "./components/app/Chat";
 import NotFound from "./components/NotFound";
 import { ToastContainer } from "react-toastify";
+import Guard from "./components/Guard";
+import Context from "./components/Context";
+import { useState } from "react";
 
 const App = () => {
+  const [session, setSession] = useState(null);
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+    <Context.Provider value={{ session, setSession }}>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
 
-        <Route path="/app" element={<Layout />}>
-          <Route index element={<Desktop />} />
-          <Route path="desktop" element={<Desktop />} />
-          <Route path="friends" element={<Friends />} />
-          <Route path="my-posts" element={<Post />} />
-          <Route path="video-chat" element={<Video />} />
-          <Route path="audio-chat" element={<Audio />} />
-          <Route path="chat" element={<Chat />} />
-        </Route>
+          <Route element={<Guard />}>
+            <Route path="/app" element={<Layout />}>
+              <Route index element={<Desktop />} />
+              <Route path="desktop" element={<Desktop />} />
+              <Route path="friends" element={<Friends />} />
+              <Route path="my-posts" element={<Post />} />
+              <Route path="video-chat" element={<Video />} />
+              <Route path="audio-chat" element={<Audio />} />
+              <Route path="chat" element={<Chat />} />
+            </Route>
+          </Route>
 
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      <ToastContainer />
-    </BrowserRouter>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+        <ToastContainer />
+      </BrowserRouter>
+    </Context.Provider>
   );
 };
 

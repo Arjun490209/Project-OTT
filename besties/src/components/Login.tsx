@@ -2,7 +2,7 @@ import { useState } from "react";
 import Button from "./shered/Button";
 import Card from "./shered/Card";
 import Input from "./shered/Input";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Form, { type FormDataType } from "./shered/Form";
 import HttpInterceptor from "../lib/HttpInterceptor";
 import { toast } from "react-toastify";
@@ -10,11 +10,14 @@ import CatchError from "../lib/CatchError";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-
+  const navigate = useNavigate();
   const login = async (value: FormDataType) => {
     try {
       const { data } = await HttpInterceptor.post("/auth/login", value);
       toast.success(data.message);
+      setTimeout(() => {
+        navigate("/app");
+      }, 2000);
     } catch (error: unknown) {
       CatchError(error);
     }

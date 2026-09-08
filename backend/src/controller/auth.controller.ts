@@ -56,7 +56,7 @@ export const login = async (req: Request, res: Response) => {
 
     const options = {
       httpOnly: true,
-      maxAge: 10 * 60 * 1000,
+      maxAge: 10 * 60 * 60 * 1000,
       secure: false,
     };
     const token = await generateToken(payload);
@@ -66,5 +66,29 @@ export const login = async (req: Request, res: Response) => {
     res.json({ message: "Login successfully" });
   } catch (error: unknown) {
     CatchError(error, res);
+  }
+};
+
+// ===================
+//! forget password api controller
+// ===================
+export const forgetPassword = async (req: Request, res: Response) => {
+  res.send("password");
+};
+
+// ===================
+//! get session api controller
+// ===================
+export const getSession = async (req: Request, res: Response) => {
+  try {
+    const { accessToken } = req.cookies;
+
+    if (!accessToken) throw TryError("invalid token", 401);
+
+    const session = jwt.verify(accessToken, process.env.AUTH_SECRET!);
+
+    res.json(session);
+  } catch (error: unknown) {
+    CatchError(error, res, "Invalid session");
   }
 };

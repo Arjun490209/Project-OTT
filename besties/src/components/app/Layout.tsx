@@ -1,7 +1,8 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 import Avatar from "../shered/Avatar";
 import Card from "../shered/Card";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import Context from "../Context";
 
 const sideBarStyle = {
   background: `radial-gradient( circle farthest-corner at 17.6% 50.7%,  rgba(25,0,184,1) 0%, rgba(0,0,0,1) 90% )`,
@@ -26,6 +27,7 @@ const menus = [
 ];
 
 const Layout = () => {
+  const { session } = useContext(Context);
   const [leftAsideSize, setLeftAsideSize] = useState(350);
   const rightAsideSize = 380;
   const collapse = 130;
@@ -43,6 +45,8 @@ const Layout = () => {
     return finalPath || "";
   };
 
+  console.log(session);
+
   return (
     <div className="min-h-screen">
       <aside
@@ -56,19 +60,21 @@ const Layout = () => {
           className="h-full bg-blue-500 rounded-2xl py-6"
           style={sideBarStyle}
         >
-          <div className="flex items-center justify-center">
-            {leftAsideSize === collapse ? (
-              <Avatar size="small" image="/images/avatar.webp" />
-            ) : (
-              <Avatar
-                title="Arjun Prajapati"
-                subTitle="Software Engineer"
-                image="/images/avatar.webp"
-                titleColor="#fff"
-                subTitleColor="#ddd"
-              />
-            )}
-          </div>
+          {session && (
+            <div className="flex items-center justify-center">
+              {leftAsideSize === collapse ? (
+                <Avatar size="small" image="/images/avatar.webp" />
+              ) : (
+                <Avatar
+                  title={session.fullName}
+                  subTitle={session.email}
+                  image="/images/avatar.webp"
+                  titleColor="#fff"
+                  subTitleColor="#ddd"
+                />
+              )}
+            </div>
+          )}
           <div className="px-4 pt-6">
             {menus.map((menu, index) => (
               <Link
