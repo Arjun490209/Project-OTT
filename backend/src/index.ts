@@ -7,6 +7,8 @@ dbConnect();
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRouter from "./router/auth.router";
+import storageRouter from "./router/storage.router";
+import AuthMiddleware from "./middleware/auth.middleware";
 
 const app = express();
 
@@ -21,6 +23,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use("/auth", authRouter);
+app.use("/storage", AuthMiddleware, storageRouter);
 
 app.listen(process.env.PORT || 8080, () =>
   console.log(`Server running port ${process.env.PORT}`),

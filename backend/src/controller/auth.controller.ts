@@ -2,15 +2,8 @@ import { Request, Response } from "express";
 import User from "../model/user.model";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import mongoose from "mongoose";
 import { CatchError, TryError } from "../utils/error";
-
-interface PayloadInterface {
-  id: mongoose.Types.ObjectId;
-  fullName: string;
-  email: string;
-  mobile: string;
-}
+import { PayloadInterface } from "../middleware/auth.middleware";
 
 const accessTokenExpiry = "10d";
 

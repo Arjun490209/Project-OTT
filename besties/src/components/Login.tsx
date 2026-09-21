@@ -15,9 +15,7 @@ const Login = () => {
     try {
       const { data } = await HttpInterceptor.post("/auth/login", value);
       toast.success(data.message);
-      setTimeout(() => {
-        navigate("/app");
-      }, 2000);
+      navigate("/app");
     } catch (error: unknown) {
       CatchError(error);
     }

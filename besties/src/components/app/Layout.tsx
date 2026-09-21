@@ -3,6 +3,7 @@ import Avatar from "../shered/Avatar";
 import Card from "../shered/Card";
 import { useContext, useState } from "react";
 import Context from "../Context";
+import HttpInterceptor from "../../lib/HttpInterceptor";
 
 const sideBarStyle = {
   background: `radial-gradient( circle farthest-corner at 17.6% 50.7%,  rgba(25,0,184,1) 0%, rgba(0,0,0,1) 90% )`,
@@ -45,7 +46,33 @@ const Layout = () => {
     return finalPath || "";
   };
 
-  console.log(session);
+  const uploadImage = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.click();
+    input.onchange = async () => {
+      if (!input.files) return;
+      const file = input.files[0];
+      const payload = {
+        path: "demo/hello.png",
+        type: file.type,
+      };
+
+      try {
+        const options = {
+          headers: {
+            "Content-Type": file.type,
+          },
+        };
+        const { data } = await HttpInterceptor.post("/storage/upload", payload);
+
+        HttpInterceptor.put(data.url, file, options);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+  };
 
   return (
     <div className="min-h-screen">
@@ -71,6 +98,7 @@ const Layout = () => {
                   image="/images/avatar.webp"
                   titleColor="#fff"
                   subTitleColor="#ddd"
+                  onClick={uploadImage}
                 />
               )}
             </div>
