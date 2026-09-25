@@ -8,7 +8,7 @@ const Chat = () => {
       <div className="h-125 overflow-auto space-y-12 pb-10 ">
         {Array(20)
           .fill(0)
-          .map((item, index) => (
+          .map((_, index) => (
             <div className="space-y-12" key={index}>
               <div className="flex items-start gap-4">
                 <Avatar image="/images/avatar.webp" size="medium" />

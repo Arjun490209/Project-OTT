@@ -1,7 +1,9 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
+import { BellOutlined, MenuOutlined } from "@ant-design/icons";
+import { Button, Drawer } from "antd";
 import Avatar from "../shered/Avatar";
 import Card from "../shered/Card";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Context from "../Context";
 import HttpInterceptor from "../../lib/HttpInterceptor";
 
@@ -27,24 +29,59 @@ const menus = [
   },
 ];
 
+const getWindowWidth = () =>
+  typeof window !== "undefined" ? window.innerWidth : 1200;
+
 const Layout = () => {
   const { session } = useContext(Context);
   const [leftAsideSize, setLeftAsideSize] = useState(350);
+  const [viewportWidth, setViewportWidth] = useState(() => getWindowWidth());
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const rightAsideSize = 380;
   const collapse = 130;
-  const sectionDimension = {
-    width: `calc(100% - ${leftAsideSize}px - ${rightAsideSize}px)`,
-    marginLeft: leftAsideSize,
-    transition: "width 0.3s ease-in-out",
-  };
+
+  const isMobile = viewportWidth < 768;
+  const showRightPanel = viewportWidth >= 1100;
+
+  useEffect(() => {
+    const handleResize = () => {
+      const width = getWindowWidth();
+      setViewportWidth(width);
+
+      if (width >= 768) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const { pathname } = useLocation();
+
+  const mainLayoutStyle = {
+    width: isMobile ? "100%" : "100%",
+    paddingLeft: isMobile ? 0 : leftAsideSize,
+    paddingRight: isMobile || !showRightPanel ? 0 : rightAsideSize,
+    transition: "all 0.3s ease-in-out",
+  };
 
   const getPathName = (path: string) => {
     const firstPath = path.split("/").pop();
     const finalPath = firstPath?.split("-").join(" ");
     return finalPath || "";
   };
+
+  const toggleSidebar = () => {
+    if (isMobile) {
+      setMobileMenuOpen((prev) => !prev);
+      return;
+    }
+
+    setLeftAsideSize((prev) => (prev === collapse ? 350 : collapse));
+  };
+
+  const closeMobileMenu = () => setMobileMenuOpen(false);
 
   const uploadImage = () => {
     const input = document.createElement("input");
@@ -75,155 +112,368 @@ const Layout = () => {
   };
 
   return (
-    <div className="min-h-screen">
-      <aside
-        className="bg-white h-full p-8 fixed top-0 left-0 overflow-auto"
-        style={{
-          width: `${leftAsideSize}px`,
-          transition: "width 0.3s ease-in-out",
-        }}
-      >
-        <div
-          className="h-full bg-blue-500 rounded-2xl py-6"
-          style={sideBarStyle}
+    <div className="min-h-screen bg-slate-100 text-slate-800">
+      {isMobile && (
+        <Drawer
+          open={mobileMenuOpen}
+          placement="left"
+          onClose={closeMobileMenu}
+          width={viewportWidth < 480 ? 280 : 320}
+          closable={false}
+          bodyStyle={{ padding: 0, background: "transparent" }}
+          style={{ background: "transparent" }}
+          destroyOnClose
         >
-          {session && (
-            <div className="flex items-center justify-center">
-              {leftAsideSize === collapse ? (
-                <Avatar size="small" image="/images/avatar.webp" />
-              ) : (
-                <Avatar
-                  title={session.fullName}
-                  subTitle={session.email}
-                  image="/images/avatar.webp"
-                  titleColor="#fff"
-                  subTitleColor="#ddd"
-                  onClick={uploadImage}
-                />
-              )}
-            </div>
-          )}
-          <div className="px-4 pt-6">
-            {menus.map((menu, index) => (
-              <Link
-                key={index}
-                to={menu.href}
-                className={`flex items-center gap-4  py-2 text-gray-300 hover:bg-gray-500 hover:text-white rounded-lg mt-2 cursor-pointer ${leftAsideSize === collapse ? "overflow-hidden px-2" : "px-4"} `}
-              >
-                <i className={`${menu.icon} text-lg`}></i>
-                <label className="capitalize">{menu.label}</label>
-              </Link>
-            ))}
-
-            <button
-              className={`flex w-full items-center gap-4  py-2 text-gray-300 hover:bg-red-500 hover:text-white rounded-lg mt-2 cursor-pointer ${leftAsideSize === collapse ? "overflow-hidden px-2" : "px-4"} `}
+          <aside
+            className="h-full border-r border-slate-200 bg-white shadow-lg shadow-slate-200/60"
+            style={{
+              width: "100%",
+              height: "100%",
+            }}
+          >
+            <div
+              className="flex h-full flex-col overflow-hidden rounded-r-3xl py-5"
+              style={sideBarStyle}
             >
-              <i className="ri-logout-circle-r-line text-lg"></i>
-              <label className="capitalize">Logout</label>
-            </button>
-          </div>
-        </div>
-      </aside>
-
-      <section className="h-full py-8" style={sectionDimension}>
-        <Card
-          title={
-            <div>
-              <button
-                className="hover:text-blue-600 text-blue-400 cursor-pointer"
-                onClick={() =>
-                  setLeftAsideSize(leftAsideSize === collapse ? 350 : 130)
-                }
-              >
-                <i className="ri-arrow-left-fill text-lg"></i>
-              </button>
-              <span className="capitalize ml-2">{getPathName(pathname)}</span>
-            </div>
-          }
-          divider
-        >
-          <Outlet />
-        </Card>
-      </section>
-
-      <aside
-        className="bg-white h-full px-4 py-8 fixed top-0 right-0 overflow-auto space-y-6"
-        style={{ width: `${rightAsideSize}px` }}
-      >
-        <div className="h-64 overflow-auto">
-          <Card title="Suggested" divider>
-            <div className="space-y-6">
-              {Array(10)
-                .fill(0)
-                .map((item, index) => (
-                  <div key={index}>
-                    <Avatar
-                      image="/images/avatar.webp"
-                      title="Mr. Ram"
-                      subTitle={
-                        <button className="bg-green-500 text-white px-2 rounded py-0.5 text-sm">
-                          <i className="ri-user-add-line mr-1"></i>
-                          Add Friend
-                        </button>
-                      }
-                    />
+              <div className="px-3 pb-4">
+                {session && (
+                  <div className="flex items-center justify-center">
+                    <Avatar size="small" image="/images/avatar.webp" />
                   </div>
+                )}
+              </div>
+
+              <nav className="mt-4 flex-1 px-3 space-y-2">
+                {menus.map((menu, index) => (
+                  <Link
+                    key={index}
+                    to={menu.href}
+                    onClick={closeMobileMenu}
+                    className="group flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10 hover:text-white"
+                  >
+                    <i className={`${menu.icon} text-lg`}></i>
+                    <span className="capitalize">{menu.label}</span>
+                  </Link>
                 ))}
-            </div>
-          </Card>
-        </div>
 
-        <Card title="My friends" divider>
-          <div className="space-y-4 py-3">
-            {Array(20)
-              .fill(0)
-              .map((_, index) => (
-                <div
-                  key={index}
-                  className="bg-gray-100 p-2 rounded-lg flex items-center justify-between"
+                <button
+                  type="button"
+                  className="mt-3 flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-red-500/80 hover:text-white"
                 >
-                  <Avatar
-                    size="small"
-                    title="Arjun Prajapati"
-                    image="/images/avatar.webp"
-                    subTitle={
-                      <small
-                        className={`${index % 2 === 0 ? "text-green-500" : "text-red-500"} font-medium`}
-                      >
-                        {index % 2 === 0 ? "Online" : "Offline"}
-                      </small>
-                    }
-                  />
-                  <div className="space-x-2">
-                    <Link
-                      to={"/app/chat"}
-                      className="hover:text-blue-600 text-blue-400 cursor-pointer"
-                      title="Chat"
-                    >
-                      <i className="ri-chat-ai-line text-lg"></i>
-                    </Link>
+                  <i className="ri-logout-circle-r-line text-lg"></i>
+                  <span className="capitalize">Logout</span>
+                </button>
+              </nav>
+            </div>
+          </aside>
+        </Drawer>
+      )}
 
-                    <Link
-                      to={"/app/audio-chat"}
-                      className="hover:text-green-600 text-green-400 cursor-pointer"
-                      title="Call"
-                    >
-                      <i className="ri-phone-line text-lg"></i>
-                    </Link>
+      <div className="flex min-h-screen flex-col">
+        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/80 backdrop-blur-xl">
+          <div className="flex items-center justify-between gap-3 px-3 py-3 sm:px-4 lg:px-6">
+            <div className="flex items-center gap-3">
+              <Button
+                type="text"
+                icon={<MenuOutlined />}
+                onClick={toggleSidebar}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 lg:hidden"
+              />
 
-                    <Link
-                      to={"/app/video-chat"}
-                      className="hover:text-amber-600 text-amber-400 cursor-pointer"
-                      title="Video Call"
-                    >
-                      <i className="ri-video-on-ai-line text-lg"></i>
-                    </Link>
-                  </div>
+              <div className="flex items-center gap-2">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-lg font-bold text-white shadow-lg shadow-blue-500/30">
+                  B
                 </div>
-              ))}
+                <div className="hidden sm:block">
+                  <p className="text-sm font-medium text-slate-500">
+                    Workspace
+                  </p>
+                  <h1 className="text-base font-bold text-slate-900">
+                    Besties
+                  </h1>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Button
+                className="hidden sm:inline-flex"
+                type="default"
+                icon={<i className="ri-calendar-event-line text-base" />}
+              >
+                Schedule
+              </Button>
+              <Button
+                type="text"
+                shape="circle"
+                icon={<BellOutlined />}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200"
+              />
+            </div>
           </div>
-        </Card>
-      </aside>
+        </header>
+
+        <div className="flex flex-1 overflow-hidden">
+          {!isMobile && (
+            <aside
+              className="fixed left-0 top-[64px] z-40 h-[calc(100vh-64px)] overflow-hidden border-r border-slate-200 bg-white shadow-lg shadow-slate-200/60"
+              style={{
+                width: `${leftAsideSize}px`,
+                transition: "width 0.3s ease-in-out",
+              }}
+            >
+              <div
+                className="flex h-full flex-col overflow-hidden rounded-r-3xl py-5"
+                style={sideBarStyle}
+              >
+                <div className="px-3 pb-4">
+                  {session && (
+                    <div className="flex items-center justify-center">
+                      {leftAsideSize === collapse ? (
+                        <Avatar size="small" image="/images/avatar.webp" />
+                      ) : (
+                        <Avatar
+                          title={session.fullName}
+                          subTitle={session.email}
+                          image="/images/avatar.webp"
+                          titleColor="#fff"
+                          subTitleColor="#ddd"
+                          onClick={uploadImage}
+                        />
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <nav className="mt-4 flex-1 px-3 space-y-2">
+                  {menus.map((menu, index) => (
+                    <Link
+                      key={index}
+                      to={menu.href}
+                      onClick={closeMobileMenu}
+                      className={`group flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10 hover:text-white ${leftAsideSize === collapse ? "justify-center" : ""}`}
+                    >
+                      <i className={`${menu.icon} text-lg`}></i>
+                      {leftAsideSize !== collapse && (
+                        <span className="capitalize">{menu.label}</span>
+                      )}
+                    </Link>
+                  ))}
+
+                  <button
+                    type="button"
+                    className={`mt-3 flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-red-500/80 hover:text-white ${leftAsideSize === collapse ? "justify-center" : ""}`}
+                  >
+                    <i className="ri-logout-circle-r-line text-lg"></i>
+                    {leftAsideSize !== collapse && (
+                      <span className="capitalize">Logout</span>
+                    )}
+                  </button>
+                </nav>
+
+                <div className="px-3 pb-2">
+                  <button
+                    type="button"
+                    onClick={toggleSidebar}
+                    className="hidden w-full items-center justify-center rounded-2xl border border-white/20 bg-white/5 px-3 py-2 text-sm font-medium text-white/90 transition hover:bg-white/10 lg:flex"
+                  >
+                    <i
+                      className={`mr-2 ${leftAsideSize === collapse ? "ri-arrow-right-s-line" : "ri-arrow-left-s-line"}`}
+                    ></i>
+                    {leftAsideSize === collapse ? "Expand" : "Collapse"}
+                  </button>
+                </div>
+              </div>
+            </aside>
+          )}
+
+          <main
+            className="flex-1 overflow-y-auto bg-slate-100 px-3 py-4 sm:px-4 lg:px-6"
+            style={mainLayoutStyle}
+          >
+            <div className="mx-auto max-w-6xl">
+              <Card
+                title={
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="text"
+                      icon={<MenuOutlined />}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 lg:hidden"
+                      onClick={toggleSidebar}
+                    />
+                    <span className="text-lg font-semibold capitalize text-slate-800">
+                      {getPathName(pathname)}
+                    </span>
+                  </div>
+                }
+                divider
+              >
+                <Outlet />
+              </Card>
+            </div>
+          </main>
+
+          {!isMobile && showRightPanel && (
+            <aside
+              className="fixed right-0 top-[64px] z-20 h-[calc(100vh-64px)] w-[380px] overflow-auto border-l border-slate-200 bg-white px-4 py-5"
+              style={{
+                transition: "all 0.3s ease-in-out",
+              }}
+            >
+              <div className="space-y-6">
+                <Card title="Suggested" divider>
+                  <div className="space-y-5">
+                    {Array(8)
+                      .fill(0)
+                      .map((_, index) => (
+                        <div key={index}>
+                          <Avatar
+                            image="/images/avatar.webp"
+                            title="Mr. Ram"
+                            subTitle={
+                              <button className="bg-green-500 text-white px-2 rounded py-0.5 text-sm">
+                                <i className="ri-user-add-line mr-1"></i>
+                                Add Friend
+                              </button>
+                            }
+                          />
+                        </div>
+                      ))}
+                  </div>
+                </Card>
+
+                <Card title="My friends" divider>
+                  <div className="space-y-3 py-2">
+                    {Array(12)
+                      .fill(0)
+                      .map((_, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between gap-3 rounded-xl bg-slate-100 p-2.5"
+                        >
+                          <Avatar
+                            size="small"
+                            title="Arjun Prajapati"
+                            image="/images/avatar.webp"
+                            subTitle={
+                              <small
+                                className={`${index % 2 === 0 ? "text-green-500" : "text-red-500"} font-medium`}
+                              >
+                                {index % 2 === 0 ? "Online" : "Offline"}
+                              </small>
+                            }
+                          />
+                          <div className="flex items-center gap-2">
+                            <Link
+                              to={"/app/chat"}
+                              className="hover:text-blue-600 text-blue-400 cursor-pointer"
+                              title="Chat"
+                            >
+                              <i className="ri-chat-ai-line text-lg"></i>
+                            </Link>
+                            <Link
+                              to={"/app/audio-chat"}
+                              className="hover:text-green-600 text-green-400 cursor-pointer"
+                              title="Call"
+                            >
+                              <i className="ri-phone-line text-lg"></i>
+                            </Link>
+                            <Link
+                              to={"/app/video-chat"}
+                              className="hover:text-amber-600 text-amber-400 cursor-pointer"
+                              title="Video Call"
+                            >
+                              <i className="ri-video-on-ai-line text-lg"></i>
+                            </Link>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </Card>
+              </div>
+            </aside>
+          )}
+        </div>
+      </div>
+
+      {isMobile && (
+        <div className="px-3 pb-5 pt-2">
+          <div className="space-y-4">
+            <Card title="Suggested" divider>
+              <div className="space-y-4">
+                {Array(4)
+                  .fill(0)
+                  .map((_, index) => (
+                    <div
+                      key={index}
+                      className="border-b border-slate-100 pb-2 last:border-0 last:pb-0"
+                    >
+                      <Avatar
+                        image="/images/avatar.webp"
+                        title="Mr. Ram"
+                        subTitle={
+                          <button className="bg-green-500 text-white px-2 rounded py-0.5 text-sm">
+                            <i className="ri-user-add-line mr-1"></i>
+                            Add Friend
+                          </button>
+                        }
+                      />
+                    </div>
+                  ))}
+              </div>
+            </Card>
+
+            <Card title="My friends" divider>
+              <div className="space-y-3">
+                {Array(5)
+                  .fill(0)
+                  .map((_, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between gap-2 rounded-xl bg-slate-100 p-2"
+                    >
+                      <Avatar
+                        size="small"
+                        title="Arjun Prajapati"
+                        image="/images/avatar.webp"
+                        subTitle={
+                          <small
+                            className={`${index % 2 === 0 ? "text-green-500" : "text-red-500"} font-medium`}
+                          >
+                            {index % 2 === 0 ? "Online" : "Offline"}
+                          </small>
+                        }
+                      />
+                      <div className="flex items-center gap-2">
+                        <Link
+                          to={"/app/chat"}
+                          className="text-blue-500"
+                          title="Chat"
+                        >
+                          <i className="ri-chat-ai-line text-lg"></i>
+                        </Link>
+                        <Link
+                          to={"/app/audio-chat"}
+                          className="text-green-500"
+                          title="Call"
+                        >
+                          <i className="ri-phone-line text-lg"></i>
+                        </Link>
+                        <Link
+                          to={"/app/video-chat"}
+                          className="text-amber-500"
+                          title="Video Call"
+                        >
+                          <i className="ri-video-on-ai-line text-lg"></i>
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </Card>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

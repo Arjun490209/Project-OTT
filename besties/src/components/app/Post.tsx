@@ -1,4 +1,3 @@
-import Button from "../shered/Button";
 import Card from "../shered/Card";
 import Divider from "../shered/Divider";
 import IconButton from "../shered/IconButton";
@@ -8,7 +7,7 @@ const Post = () => {
     <div className="space-y-6">
       {Array(20)
         .fill(0)
-        .map((item, index) => (
+        .map((_, index) => (
           <Card key={index}>
             <div className="space-y-2">
               <p>
